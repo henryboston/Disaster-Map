@@ -8,6 +8,18 @@
   stroke: #fff;
   stroke-linejoin: round;
 }
+.caption {
+  font-weight: bold;
+}
+
+.key path {
+  display: none;
+}
+
+.key line {
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -17,25 +29,34 @@
 <script>
 
 var width = 960,
-    height = 500;
+    height = 700;
 //var color = d3.scale.ordinal()
 //    .domain(["6TH", "7TH", "5TH", "4TH"])
 //    .range(colorbrewer.RdBu[4]);
-var scale = colorbrewer.Reds[9];
+//var scale = colorbrewer.Reds[9];
 //.reverse();
 //var scale = colorbrewer.YlGn[9].reverse().concat(colorbrewer.YlOrRd[9]);
 
-var color = d3.scale.quantize()
-    .domain([0,26])
-    .range(scale);
+var color = d3.scale.threshold()
+    .domain([0,3,6,10,14,19,24,30,55])
+    .range(["#FFF5F0","#FEE0D2","#FCBBA1","#FC9272","#FB6A4A","#EF3B2C","#CB181D","#A50F15","#67000D"]);
 
-var quantize = d3.scale.ordinal()
-    .domain([0, 53])
-    .range(d3.range(11).map(function(i) { return "q" + i + "-9"; }));
+//var quantize = d3.scale.ordinal()
+//    .domain([0, 53])
+//    .range(d3.range(11).map(function(i) { return "q" + i + "-9"; }));
 
 //var color = d3.scale.ordinal()
 //    .domain([0, 53])
 //    .range(d3.range(53).map(colorbrewer.RdBu[53]);
+var x = d3.scale.linear()
+      .domain([0,55])
+      .range([0, 550]);
+
+var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom")
+      .tickSize(13)
+      .tickValues(color.domain());
 
 var path = d3.geo.path();
 
@@ -43,6 +64,28 @@ var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
+var g = svg.append("g")
+      .attr("class", "key")
+      .attr("transform", "translate(250,525)");
+
+g.selectAll("rect")
+    .data(color.range().map(function(d, i) {
+      return {
+        x0: i ? x(color.domain()[i - 1]) : x.range()[0],
+        x1: i < color.domain().length ? x(color.domain()[i]) : x.range()[1],
+        z: d
+      };
+    }))
+  .enter().append("rect")
+    .attr("height", 8)
+    .attr("x", function(d) { return d.x0; })
+    .attr("width", function(d) { return d.x1 - d.x0; })
+    .style("fill", function(d) { return d.z; });
+
+g.call(xAxis).append("text")
+    .attr("class", "caption")
+    .attr("y", -6)
+    .text("Disasters per county");
 queue()
     .defer(d3.json, "us.json")
     .defer(d3.tsv, "disaster.tsv")
@@ -60,12 +103,16 @@ function ready(error, us, disaster) {
     .enter().append("path")
       .attr("fill", function(d) { return color(numberById[d.id]); })
       .attr("d", path)
-      .attr("stroke", 1);
+      .attr("stroke", 1)
+    .append("title")
+      .text("test");
+
 
   svg.append("path")
       .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
       .attr("class", "states")
       .attr("d", path);
+
 }
 
 </script>
