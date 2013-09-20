@@ -1,8 +1,19 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<link type="text/css" rel="stylesheet" href="colorbrewer.css"/>
+<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
 <style>
-
+#map {
+}
+#toolbox {
+  z-index: 1;
+  display: block;
+  font-size: 36px;
+  font-weight: 300;
+  text-shadow: 0 1px 0 #fff;
+  top: 680px;
+  right: 140px;
+  text-align: right;
+}
 .states {
   fill: none;
   stroke: #fff;
@@ -22,32 +33,24 @@
 }
 </style>
 <body>
+  <div id="toolbox">
+    <span>Test</span>
+  </div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="http://d3js.org/topojson.v0.min.js"></script>
-<script src="colorbrewer.js"></script>
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<div id="map"></div>
 <script>
 
-var width = 960,
+var width = 100,
     height = 700;
-//var color = d3.scale.ordinal()
-//    .domain(["6TH", "7TH", "5TH", "4TH"])
-//    .range(colorbrewer.RdBu[4]);
-//var scale = colorbrewer.Reds[9];
-//.reverse();
-//var scale = colorbrewer.YlGn[9].reverse().concat(colorbrewer.YlOrRd[9]);
 
 var color = d3.scale.threshold()
     .domain([0,3,6,10,14,19,24,30,55])
     .range(["#FFF5F0","#FEE0D2","#FCBBA1","#FC9272","#FB6A4A","#EF3B2C","#CB181D","#A50F15","#67000D"]);
 
-//var quantize = d3.scale.ordinal()
-//    .domain([0, 53])
-//    .range(d3.range(11).map(function(i) { return "q" + i + "-9"; }));
-
-//var color = d3.scale.ordinal()
-//    .domain([0, 53])
-//    .range(d3.range(53).map(colorbrewer.RdBu[53]);
 var x = d3.scale.linear()
       .domain([0,55])
       .range([0, 550]);
@@ -60,9 +63,23 @@ var xAxis = d3.svg.axis()
 
 var path = d3.geo.path();
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+var svg = d3.select("#map").append("svg")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .call(d3.behavior.zoom()
+    .on("zoom", redraw))
+    .append("g");
+
+function redraw() {
+  svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale +")");
+}
+
+var tooltip = d3.select("body").append("div")
+  .attr("class", "tooltip")
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("visibility", "hidden")
+  .text("what");
 
 var g = svg.append("g")
       .attr("class", "key")
@@ -93,26 +110,27 @@ queue()
 
 function ready(error, us, disaster) {
   var numberById = {};
-  //quantize.domain([0, d3.max(d3.values(wealth))]);
+  var nameById = {};
   disaster.forEach(function(d) { numberById[d.id] = +d.number; });
-
+  disaster.forEach(function(d) { nameById[d.id] = d.name })
+  
   svg.append("g")
-      .attr("class", "counties")
     .selectAll("path")
       .data(topojson.object(us, us.objects.counties).geometries)
     .enter().append("path")
+      .attr("class", "county")
+      
+      .on("mouseover", function(d) { d3.select("#toolbox span").text( numberById[d.id] + " Disasters in " + nameById[d.id] + " County"); })
       .attr("fill", function(d) { return color(numberById[d.id]); })
       .attr("d", path)
       .attr("stroke", 1)
-    .append("title")
-      .text("test");
-
-
-  svg.append("path")
+    .append("svg:title")
+      .attr("class", "tooltip")
+      .text(function(d) {return numberById[d.id] + " Disasters in " + nameById[d.id]})
+     
+    svg.append("path")
       .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
       .attr("class", "states")
       .attr("d", path);
-
 }
-
 </script>
