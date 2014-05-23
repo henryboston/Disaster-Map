@@ -32,16 +32,37 @@
   stroke: #000;
   shape-rendering: crispEdges;
 }
+
+#title {
+  text-align: center;
+}
+#title h1 {
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  line-height: 0;
+}
+#info {
+  bottom: 0;
+  right: 0;
+  position: absolute;
+}
+
 </style>
 <body>
+  <div id="title">
+    <h1>FEMA Disaster Declarations by County</h1>
+    <h2>From 1953 - October 2013</h2>
+  </div>
   <div id="toolbox">
-    <span>Test</span>
+    <span></span>
   </div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="http://d3js.org/topojson.v0.min.js"></script>
-<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<div id="info">
+  Data obtained from FEMA via <a href="data.gov">data.gov</a>
+  Map created by <a href="henryboston.net" target="_blank">Henry Boston</a>
+</div>
 <div id="map"></div>
 <script>
 
