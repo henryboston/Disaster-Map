@@ -1,1 +1,1 @@
-A choropleth map showing the total number of federally declared disasters from 1953 to present. Made using D3.js
+An interactive web map that displays the total number of federally declared disasters at the county level. Data was obtained from DATA.GOV. Disasters are declared through the FEMA disaster declaration process. Created for an Advanced GIS course at the University of North Texas
